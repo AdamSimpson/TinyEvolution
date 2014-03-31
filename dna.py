@@ -14,12 +14,12 @@ class DNA(object):
         self._fitness = None
         self.max_polygon_count = 1000;
         self.min_polygon_count = 50;
-        self.mutate_polygon_count_rate = 0.1;
+        self.mutate_polygon_count_rate = 0.0;
         self.mutate_polygon_rate = 0.1;
-        self.mutate_polygon_point_count_rate = 0.5;
-        self.mutate_polygon_location_rate = 0.6;
-        self.mutate_polygon_point_rate = 0.3;
-        self.mutate_polygon_color_rate = 0.8;
+        self.mutate_polygon_point_count_rate = 0.0;
+        self.mutate_polygon_location_rate = 0.1;
+        self.mutate_polygon_point_rate = 0.1;
+        self.mutate_polygon_color_rate = 0.1;
 
     @property
     def polygon_count(self):
@@ -29,9 +29,8 @@ class DNA(object):
     @property
     def fitness(self):
         if self._fitness == None:
-            return self.calculate_fitness()
-        else:
-            return self._fitness
+            self.calculate_fitness()
+        return self._fitness
 
     # When replicated there is a chance of mutation for each polygon
     # as well as the total number of polygons
@@ -205,12 +204,12 @@ class DNA(object):
         self._fitness = sum(ImageStat.Stat(diff).sum)
 
     # create copy of self and replicate
-    def create_child(self):
-        # Clone
+    def breed(self):
+        # Clone polygons
         polygons_copy = copy.deepcopy(self.polygons)
         child = DNA(polygons_copy, self.master_image)    
  
+        # Replicate and possibly mutate
         child.replicate()
  
-        # Replicate
         return child
