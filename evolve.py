@@ -1,12 +1,12 @@
 from PIL import Image
 import numpy as np
-import DNA
-import Polygon
+from dna import DNA
+from polygon import Polygon
 
 def main():
     
-    # Open master image
-    master_image = Image.open("master.png")    
+    # Open master image in RGB mode
+    master_image = Image.open("master.png").convert(mode="RGB")   
     width, height = master_image.size
 
     # Create initial polygons

@@ -1,6 +1,6 @@
 import numpy as np
-from PIL import Image,ImageDraw,ImageChops
-import Polygon
+from PIL import Image,ImageDraw,ImageChops,ImageStat
+from polygon import Polygon
 import cPickle
 import copy
 
@@ -14,7 +14,7 @@ class DNA(object):
         self._fitness = None
         self.max_polygon_count = 1000;
         self.min_polygon_count = 50;
-        self.mutate_polygon_count = 0.1;
+        self.mutate_polygon_count_rate = 0.1;
         self.mutate_polygon_rate = 0.1;
         self.mutate_polygon_point_count_rate = 0.5;
         self.mutate_polygon_location_rate = 0.6;
@@ -41,12 +41,12 @@ class DNA(object):
 
         # check if each polygon should mutate
         for polygon in self.polygons:
-            will_mutate = np.random.rand() < self.mutation_rate
+            will_mutate = np.random.rand() < self.mutate_polygon_rate
             if will_mutate:
                 self.mutate_polygon(polygon)
 
         # check if polygon count should mutate
-        will_mutate = np.random.rand() < self.mutate_polygons_rate
+        will_mutate = np.random.rand() < self.mutate_polygon_count_rate
         if will_mutate:
             self.mutate_polygon_count()
 
@@ -60,7 +60,11 @@ class DNA(object):
 
     # Add random polygon to DNA
     def add_polygon(self):
-        new_polygon = Polygon()
+        x_points = np.random.random_integers(low=0,high=width,size=3).tolist()
+        y_points = np.random.random_integers(low=0,high=height,size=3).tolist()
+        points = zip(x_points, y_points)
+        color = tuple(np.random.random_integers(low=0, high=255, size=4).tolist())
+        new_polygon = Polygon(points, color)
         self.polygons.append(new_polygon)
 
     # Remove specified polygon from DNA
@@ -91,8 +95,11 @@ class DNA(object):
 
     # Mutate number of points in specified polygon
     def mutate_polygon_point_count(self, polygon):
-        if np.rand() < 0.5:
-            polygon.add_point()
+        if np.random.rand() < 0.5:
+            point_x = np.random.random_integers(low=0,high=self.max_x)
+            point_y = np.random.random_integers(low=0,high=self.max_y)
+            point = (point_x, point_y)
+            polygon.add_point(point)
         else:
             random_index = np.random.randint(low=0, high=polygon.point_count)
             polygon.remove_point(random_index)
@@ -101,10 +108,10 @@ class DNA(object):
     # This needs to be fixed to something better
     def mutate_polygon_location(self, polygon):
         # Number of pixels to edge of image
-        pixels_to_left   = polygon.min_x()
-        pixels_to_right  = self.max_x - polygon.max_x()
-        pixels_to_top    = self.max_y - polygon.max_y()
-        pixels_to_bottom = polygon.min_y()
+        pixels_to_left   = polygon.min_x
+        pixels_to_right  = self.max_x - polygon.max_x
+        pixels_to_top    = self.max_y - polygon.max_y
+        pixels_to_bottom = polygon.min_y
 
         max_change_x = 0.1 * self.max_x
         max_change_y = 0.1 * self.max_y
@@ -128,7 +135,7 @@ class DNA(object):
     # Mutate random polygon point
     # This needs to be fixed to something better
     def mutate_polygon_point(self, polygon):
-        random_index = np.random.randint(low=0, hight=polygon.point_count())
+        random_index = np.random.randint(low=0, high=polygon.point_count)
         point_x, point_y = polygon.points[random_index]
 
         # Number of pixels to edge of image
@@ -174,7 +181,7 @@ class DNA(object):
     def render(self):
         del self.image
         self.image = Image.new("RGB", (self.max_x, self.max_y))
-        draw = ImageDraw.Draw(image,"RGBA")
+        draw = ImageDraw.Draw(self.image,"RGBA")
 
         for polygon in self.polygons:
             draw.polygon(polygon.points, polygon.color)
@@ -188,18 +195,19 @@ class DNA(object):
 
         # Save DNA to disk
         with open("Evolve_Polygon.dump", "wb") as output:
-            cPickle.dump(self, output, cPickle.HIGHEST_PROTOCOL)
+            cPickle.dump(self.polygons, output, cPickle.HIGHEST_PROTOCOL)
 
     # Compute fitness of DNA
     def calculate_fitness(self):
+        self.render()
         diff = ImageChops.difference(self.image, self.master_image)              
-        self._fitness = ImageState.sum(diff)
+        self._fitness = sum(ImageStat.Stat(diff).sum)
 
     # create copy of self and replicate
     def create_child(self):
         # Clone
         polygons_copy = copy.deepcopy(self.polygons)
-        child = DNA(polygon_copy, self.master_image)    
+        child = DNA(polygons_copy, self.master_image)    
  
         child.replicate()
  

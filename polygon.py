@@ -14,25 +14,30 @@ class Polygon(object):
         if(points < self.max_points):
             self._points = points
 
+    @property
     def point_count(self):
-        len(self.points)
+        return len(self.points)
 
+    @property
     def min_x(self):
-        min(self.points)[0]
+        return min(self.points)[0]
 
+    @property
     def max_x(self):
-        max(self.points)[0]
+        return max(self.points)[0]
 
+    @property
     def min_y(self):
-        min(self.points)[1]
+        return min(self.points)[1]
 
+    @property
     def max_y(self):
-        max(self.points)[1]
+        return max(self.points)[1]
 
-    def move(self, dx, dy):
-        for point in self.points:
-            point[0] += dx
-            point[1] += dy
+    def move(self, delta_x, delta_y):
+        for i, point in enumerate(self.points):
+            new_point = (point[0] + delta_x, point[1] + delta_y)
+            self.points[i] = new_point
 
     def add_point(self, point):
         self.points.append(point)
