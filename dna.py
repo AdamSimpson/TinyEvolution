@@ -171,10 +171,10 @@ class DNA(object):
         max_change = 25
         dc = np.random.randint(low=-max_change, high=max_change, size=4)
         new_color = (
-            polygon.color[0] + dc[0],
-            polygon.color[1] + dc[1],
-            polygon.color[2] + dc[2],      
-            polygon.color[3] + dc[3],
+            np.clip(polygon.color[0] + dc[0], 0, 255),
+            np.clip(polygon.color[1] + dc[1], 0, 255),
+            np.clip(polygon.color[2] + dc[2], 0, 255),      
+            np.clip(polygon.color[3] + dc[3], 0, 255),
         )
         polygon.color = new_color
 
