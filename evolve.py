@@ -6,12 +6,12 @@ from polygon import Polygon
 def main():
     
     # Open master image in RGB mode
-    master_image = Image.open("master.png").convert(mode="RGB")   
+    master_image = Image.open("obama.png").convert(mode="RGB")   
     width, height = master_image.size
 
     # Create initial polygons
     polygons = []
-    for i in range(50):
+    for i in range(200):
         x_points = np.random.random_integers(low=0,high=width,size=3).tolist()
         y_points = np.random.random_integers(low=0,high=height,size=3).tolist()
         points = zip(x_points, y_points)
@@ -20,17 +20,16 @@ def main():
         polygons.append(polygon)
 
     # Create initial DNA
-    best_dna = DNA(polygons, master_image)
+    parent = DNA(polygons, master_image)
 
-    # Evolve DNA
-    for i in range(100):
-        child = best_dna.create_child()
-        if child.fitness < best_dna.fitness:
-            best_dna = child
-        else:
-            del child
+    # Evolve DNA and breed fittest
+    for i in range(100000):
+        child = parent.breed()
+        if child.fitness < parent.fitness:
+            parent = child
 
-    best_dna.save()
+    # Save image and polygon information
+    parent.save()
 
 if __name__ == "__main__":
     main()

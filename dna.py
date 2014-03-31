@@ -18,7 +18,7 @@ class DNA(object):
         self.mutate_polygon_rate = 0.1;
         self.mutate_polygon_point_count_rate = 0.0;
         self.mutate_polygon_location_rate = 0.1;
-        self.mutate_polygon_point_rate = 0.1;
+        self.mutate_polygon_point_rate = 0.05;
         self.mutate_polygon_color_rate = 0.1;
 
     @property
