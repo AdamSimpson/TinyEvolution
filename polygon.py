@@ -40,7 +40,9 @@ class Polygon(object):
             self.points[i] = new_point
 
     def add_point(self, point):
-        self.points.append(point)
+        if self.point_count < self.max_points:
+            self.points.append(point)
 
     def remove_point(self, point_index):
-        del self.points[point_index]
+        if self.point_count > self.min_points:
+            del self.points[point_index]

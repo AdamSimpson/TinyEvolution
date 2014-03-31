@@ -21,6 +21,7 @@ class DNA(object):
         self.mutate_polygon_point_rate = 0.3;
         self.mutate_polygon_color_rate = 0.8;
 
+    @property
     def polygon_count(self):
         return len(self.polygons)
 
@@ -52,16 +53,16 @@ class DNA(object):
 
     # Mutate number of polygons in DNA
     def mutate_polygon_count(self):
-        if np.random.rand() < 0.5 and self.polygon_count() < self.max_polygon_count:
+        if np.random.rand() < 0.5 and self.polygon_count < self.max_polygon_count:
             self.add_polygon()
-        elif self.polygon_count() > self.min_polygon_count:
-            random_index = np.random.randint(0, height=self.polygon_count)
+        elif self.polygon_count > self.min_polygon_count:
+            random_index = np.random.randint(low=0, high=self.polygon_count)
             self.remove_polygon(random_index)
 
     # Add random polygon to DNA
     def add_polygon(self):
-        x_points = np.random.random_integers(low=0,high=width,size=3).tolist()
-        y_points = np.random.random_integers(low=0,high=height,size=3).tolist()
+        x_points = np.random.random_integers(low=0,high=self.max_x,size=3).tolist()
+        y_points = np.random.random_integers(low=0,high=self.max_y,size=3).tolist()
         points = zip(x_points, y_points)
         color = tuple(np.random.random_integers(low=0, high=255, size=4).tolist())
         new_polygon = Polygon(points, color)

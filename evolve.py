@@ -23,7 +23,7 @@ def main():
     best_dna = DNA(polygons, master_image)
 
     # Evolve DNA
-    for i in range(10):
+    for i in range(100):
         child = best_dna.create_child()
         if child.fitness < best_dna.fitness:
             best_dna = child
