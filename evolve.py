@@ -1,12 +1,17 @@
+from mpi4py import MPI
 from PIL import Image
 import numpy as np
 from dna import DNA
 from polygon import Polygon
 
 def main():
-    
+
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
+
     # Open master image in RGB mode
-    master_image = Image.open("obama.png").convert(mode="RGB")   
+    master_image = Image.open("master.png").convert(mode="RGB")   
     width, height = master_image.size
 
     # Create initial polygons
@@ -23,10 +28,34 @@ def main():
     parent = DNA(polygons, master_image)
 
     # Evolve DNA and breed fittest
-    for i in range(100000):
+    for i in range(1000):
+        print i
+
+        # Create child
         child = parent.breed()
-        if child.fitness < parent.fitness:
-            parent = child
+        
+        # Gather all ranks fitnesses
+        fitnesses = comm.allgather(child.fitness)
+
+        # Find rank with minimum fitness
+        min_fitness = min(fitnesses)
+
+        # If lowest child lower than current parent scatter child
+        if min_fitness < parent.fitness:
+            best_child_rank = fitnesses.index(min_fitness)
+
+            # Set polygon data to be sent
+            if best_child_rank == rank:
+                polygons = child.polygons
+            else:
+                polygons = None
+
+            # Brodcast best polygon data
+            polygons = comm.bcast(polygons, root=best_child_rank)
+
+            # Create new parent from best data
+            parent = DNA(polygons, master_image)
+
 
     # Save image and polygon information
     parent.save()
