@@ -15,7 +15,7 @@ class DNA(object):
         self.max_polygon_count = 1000;
         self.min_polygon_count = 50;
         self.mutate_polygon_count_rate = 0.0;
-        self.mutate_polygon_rate = 0.1;
+        self.mutate_polygon_rate = 0.05;
         self.mutate_polygon_point_count_rate = 0.0;
         self.mutate_polygon_location_rate = 0.1;
         self.mutate_polygon_point_rate = 0.05;

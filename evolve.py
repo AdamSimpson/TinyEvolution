@@ -11,7 +11,7 @@ def main():
     size = comm.Get_size()
 
     # Open master image in RGB mode
-    master_image = Image.open("master.png").convert(mode="RGB")   
+    master_image = Image.open("obama.png").convert(mode="RGB")   
     width, height = master_image.size
 
     # Create initial polygons on rank 0 and distribute
@@ -34,13 +34,25 @@ def main():
     # Create initial DNA
     parent = DNA(polygons, master_image)
 
-    # Evolve DNA and breed fittest
-    for i in range(1000):
-        # Create child
-        child = parent.breed()
+    allgather_time = 0
+    bcast_time = 0
+    loop_time = 0
 
+    # Evolve DNA and breed fittest
+    tl = time.clock()
+    for i in range(1000):
+
+        for j in range(10):
+            # Create child
+            child = parent.breed()
+            if child.fitness < parent.fitness:
+                parent = child            
+       
         # Gather all ranks fitnesses
-        fitnesses = comm.allgather(child.fitness)
+        cf = child.fitness
+        t0 = time.clock()
+        fitnesses = comm.allgather(cf)
+        allgather_time += time.clock() - t0
 
         # Find rank with minimum fitness
         best_fitness = min(fitnesses)
@@ -55,7 +67,9 @@ def main():
                 polygons = None
 
             # Brodcast best polygon data
+            t0 = time.clock()
             polygons = comm.bcast(polygons, root=best_rank)
+            bcast_time += time.clock() - t0
 
             if best_rank == rank:
                 parent = child
@@ -65,7 +79,10 @@ def main():
         # Save image and polygon information
         if i%1000 == 0 and rank == 0:
             parent.save()
-            print len(parent.polygons), "polygons saved"
+
+    tle = time.clock() - tl
+    print "loop time: ", tle
+    print "Allgather time: ", allgather_time, "bcast time: ", bcast_time
 
 if __name__ == "__main__":
     main()
