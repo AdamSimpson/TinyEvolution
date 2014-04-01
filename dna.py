@@ -179,20 +179,17 @@ class DNA(object):
 
     # Render the DNA to image
     def render(self):
-        del self.image
         self.image = Image.new("RGB", (self.max_x, self.max_y))
         draw = ImageDraw.Draw(self.image,"RGBA")
 
         for polygon in self.polygons:
             draw.polygon(polygon.points, polygon.color)
 
-        del draw
-
     # Save the image and Polygon class to disk
     def save(self):
         # Render image if not already
         if self.image == None:
-            self.image.render()
+            self.render()
 
         # Save image
         self.image.save("Evolve.png")
