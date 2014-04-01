@@ -29,12 +29,13 @@ def main():
     parent = DNA(polygons, master_image)
 
     # Evolve DNA and breed fittest
-    for i in range(1000):
+    for i in range(1000000):
         # Create child
         child = parent.breed()
 
         # Gather all ranks fitnesses
         fitness = child.fitness
+
         fitnesses = comm.allgather(fitness)
 
         # Find rank with minimum fitness
@@ -50,6 +51,8 @@ def main():
             else:
                 polygons = None
 
+            start_time = time.time()
+
             # Brodcast best polygon data
             polygons = comm.bcast(polygons, root=best_child_rank)
 
@@ -58,8 +61,9 @@ def main():
             else:
                 parent = DNA(polygons, master_image)
 
-    # Save image and polygon information
-    parent.save()
+        # Save image and polygon information
+        if i%1000 == 0 and rank == 0:
+            parent.save()
 
 if __name__ == "__main__":
     main()
