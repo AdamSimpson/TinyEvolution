@@ -190,6 +190,10 @@ class DNA(object):
 
     # Save the image and Polygon class to disk
     def save(self):
+        # Render image if not already
+        if self.image == None:
+            self.image.render()
+
         # Save image
         self.image.save("Evolve.png")
 
