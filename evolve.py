@@ -3,6 +3,7 @@ from PIL import Image
 import numpy as np
 from dna import DNA
 from polygon import Polygon
+import time
 
 def main():
 
@@ -29,13 +30,12 @@ def main():
 
     # Evolve DNA and breed fittest
     for i in range(1000):
-        print i
-
         # Create child
         child = parent.breed()
-        
+
         # Gather all ranks fitnesses
-        fitnesses = comm.allgather(child.fitness)
+        fitness = child.fitness
+        fitnesses = comm.allgather(fitness)
 
         # Find rank with minimum fitness
         min_fitness = min(fitnesses)
@@ -53,9 +53,10 @@ def main():
             # Brodcast best polygon data
             polygons = comm.bcast(polygons, root=best_child_rank)
 
-            # Create new parent from best data
-            parent = DNA(polygons, master_image)
-
+            if best_child_rank == rank:
+                parent = child
+            else:
+                parent = DNA(polygons, master_image)
 
     # Save image and polygon information
     parent.save()
