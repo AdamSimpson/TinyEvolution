@@ -35,7 +35,6 @@ def main():
 
         # Gather all ranks fitnesses
         fitness = child.fitness
-
         fitnesses = comm.allgather(fitness)
 
         # Find rank with minimum fitness
@@ -50,8 +49,6 @@ def main():
                 polygons = child.polygons
             else:
                 polygons = None
-
-            start_time = time.time()
 
             # Brodcast best polygon data
             polygons = comm.bcast(polygons, root=best_child_rank)
