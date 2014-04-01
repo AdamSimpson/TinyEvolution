@@ -4,6 +4,7 @@ import numpy as np
 from dna import DNA
 from polygon import Polygon
 import time
+import copy
 
 def main():
     comm = MPI.COMM_WORLD
@@ -42,11 +43,11 @@ def main():
     tl = time.clock()
     for i in range(1000):
 
+        sub_parent = DNA(copy.deepcopy(parent.polygons), master_image)
         for j in range(10):
-            # Create child
-            child = parent.breed()
-            if child.fitness < parent.fitness:
-                parent = child            
+            child = sub_parent.breed()
+            if child.fitness < sub_parent.fitness:
+                sub_parent = child            
        
         # Gather all ranks fitnesses
         cf = child.fitness
@@ -77,7 +78,7 @@ def main():
                 parent = DNA(polygons, master_image)
 
         # Save image and polygon information
-        if i%1000 == 0 and rank == 0:
+        if i%100 == 0 and rank == 0:
             parent.save()
 
     tle = time.clock() - tl
