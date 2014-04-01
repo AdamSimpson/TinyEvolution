@@ -23,7 +23,7 @@ def main():
     parent = DNA(polygons, master_image)
 
     # Evolve DNA and breed fittest
-    for i in range(100000):
+    for i in range(1000):
         child = parent.breed()
         if child.fitness < parent.fitness:
             parent = child
