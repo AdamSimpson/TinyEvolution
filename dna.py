@@ -33,7 +33,7 @@ class DNA(object):
             self.calculate_fitness()
         return self._fitness
 
-    # Convenience function to determine if mutatin will occur given the rate of mutation
+    # Convenience function to determine if mutation will occur given the rate of mutation
     def will_mutate(self, rate):
         will_mutate = np.random.rand() < rate
         return will_mutate
