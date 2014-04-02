@@ -50,9 +50,9 @@ def main():
                 sub_parent = child            
        
         # Gather all ranks fitnesses
-        cf = child.fitness
+        fitness = sub_parent.fitness
         t0 = time.clock()
-        fitnesses = comm.allgather(cf)
+        fitnesses = comm.allgather(fitness)
         allgather_time += time.clock() - t0
 
         # Find rank with minimum fitness
@@ -63,7 +63,7 @@ def main():
 	if best_fitness < parent.fitness:
             # Set polygon data to be sent
             if best_rank == rank:
-                polygons = child.polygons
+                polygons = sub_parent.polygons
             else:
                 polygons = None
 
@@ -73,7 +73,7 @@ def main():
             bcast_time += time.clock() - t0
 
             if best_rank == rank:
-                parent = child
+                parent = sub_parent
             else:
                 parent = DNA(polygons, master_image)
 
