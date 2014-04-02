@@ -40,10 +40,10 @@ def main():
     loop_time = 0
 
     # Evolve DNA and breed fittest
-    tl = time.clock()
-    for i in range(1000):
+    toop_clock = time.clock()
+    for i in range(10000):
 
-        sub_parent = DNA(copy.deepcopy(parent.polygons), master_image)
+        sub_parent = parent.copy()
         for j in range(10):
             child = sub_parent.breed()
             if child.fitness < sub_parent.fitness:
@@ -79,9 +79,9 @@ def main():
 
         # Save image and polygon information
         if i%100 == 0 and rank == 0:
-            parent.save()
+            parent.save(str(i))
 
-    tle = time.clock() - tl
+    loop_time = time.clock() - loop_clock
     print "loop time: ", tle
     print "Allgather time: ", allgather_time, "bcast time: ", bcast_time
 
