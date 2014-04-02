@@ -40,7 +40,7 @@ def main():
     loop_time = 0
 
     # Evolve DNA and breed fittest
-    toop_clock = time.clock()
+    loop_clock = time.clock()
     for i in range(10000):
 
         sub_parent = parent.copy()
@@ -82,7 +82,7 @@ def main():
             parent.save(str(i))
 
     loop_time = time.clock() - loop_clock
-    print "loop time: ", tle
+    print "loop time: ", toop_time
     print "Allgather time: ", allgather_time, "bcast time: ", bcast_time
 
 if __name__ == "__main__":
