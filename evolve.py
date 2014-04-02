@@ -12,14 +12,14 @@ def main():
     size = comm.Get_size()
 
     # Open master image in RGB mode
-    master_image = Image.open("obama.png").convert(mode="RGB")   
+    master_image = Image.open("lisa.png").convert(mode="RGB")   
     width, height = master_image.size
 
     # Create initial polygons on rank 0 and distribute
     # Algorithm assumes parent is the same on all ranks
     if rank == 0:
         polygons = []
-        for i in range(200):
+        for i in range(60):
             x_points = np.random.random_integers(low=0,high=width,size=3).tolist()
             y_points = np.random.random_integers(low=0,high=height,size=3).tolist()
             points = zip(x_points, y_points)
@@ -82,7 +82,7 @@ def main():
             parent.save(str(i))
 
     loop_time = time.clock() - loop_clock
-    print "loop time: ", toop_time
+    print "loop time: ", loop_time
     print "Allgather time: ", allgather_time, "bcast time: ", bcast_time
 
 if __name__ == "__main__":
