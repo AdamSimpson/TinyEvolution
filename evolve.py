@@ -19,7 +19,7 @@ def main():
     # Algorithm assumes parent is the same on all ranks
     if rank == 0:
         polygons = []
-        for i in range(60):
+        for i in range(3):
             x_points = np.random.random_integers(low=0,high=width,size=3).tolist()
             y_points = np.random.random_integers(low=0,high=height,size=3).tolist()
             points = zip(x_points, y_points)
@@ -44,7 +44,7 @@ def main():
     for i in range(10000):
 
         sub_parent = parent.copy()
-        for j in range(10):
+        for j in range(1000):
             child = sub_parent.breed()
             if child.fitness < sub_parent.fitness:
                 sub_parent = child            
