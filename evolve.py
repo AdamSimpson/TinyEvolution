@@ -44,7 +44,7 @@ def main():
     for i in range(10000):
 
         sub_parent = parent.copy()
-        for j in range(1000):
+        for j in range(10):
             child = sub_parent.breed()
             if child.fitness < sub_parent.fitness:
                 sub_parent = child            

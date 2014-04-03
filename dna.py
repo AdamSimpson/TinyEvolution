@@ -103,7 +103,16 @@ class DNA(object):
 
         # Mutate polygon color
         if self.will_mutate(self.mutate_polygon_color_rate):
-            self.mutate_polygon_color(polygon)
+            self.mutate_polygon_red(polygon)
+
+        if self.will_mutate(self.mutate_polygon_color_rate):
+            self.mutate_polygon_green(polygon)            
+
+        if self.will_mutate(self.mutate_polygon_color_rate):
+            self.mutate_polygon_blue(polygon)
+
+        if self.will_mutate(self.mutate_polygon_color_rate):
+            self.mutate_polygon_alpha(polygon)
 
     # Mutate number of points in specified polygon
     def mutate_polygon_point_count(self, polygon):
@@ -135,8 +144,8 @@ class DNA(object):
         pixels_to_bottom = polygon.min_y
 
         # Use normal distribution to find displacement
-        dx = self.max_x * np.random.normal(scale=0.1)
-        dy = self.max_y * np.random.normal(scale=0.1)
+        dx = self.max_x * np.random.normal(scale=0.2)
+        dy = self.max_y * np.random.normal(scale=0.2)
 
         # Make sure to stay in bounds
         np.clip(dx, pixels_to_left, pixels_to_right)
@@ -157,8 +166,8 @@ class DNA(object):
         pixels_to_bottom = point_y
 
         # Use normal distribution to find displacement
-        dx = self.max_x * np.random.normal(scale=0.1)
-        dy = self.max_y * np.random.normal(scale=0.1)
+        dx = self.max_x * np.random.normal(scale=0.2)
+        dy = self.max_y * np.random.normal(scale=0.2)
 
         # Make sure to stay in bounds
         np.clip(dx, pixels_to_left, pixels_to_right)
@@ -169,15 +178,67 @@ class DNA(object):
         new_points[index] = (point_x + int(dx), point_y + int(dy))
         polygon.points = new_points
 
+    def mutate_polygon_red(self, polygon):
+        dc = 255*np.random.normal(scale=0.1)
+
+        new_color = (
+            np.clip(polygon.color[0] + int(dc), 0, 255),
+            polygon.color[1],
+            polygon.color[2],
+            polygon.color[3]
+        )
+
+        polygon.color = new_color
+
+    def mutate_polygon_green(self, polygon):
+        dc = 255*np.random.normal(scale=0.1)
+
+        new_color = (
+            polygon.color[0],
+            np.clip(polygon.color[1] + int(dc), 0, 255), 
+            polygon.color[2],
+            polygon.color[3]
+        )
+
+        polygon.color = new_color
+
+
+    def mutate_polygon_blue(self, polygon):
+        dc = 255*np.random.normal(scale=0.1)
+
+        new_color = (
+            polygon.color[0],
+            polygon.color[1],
+            np.clip(polygon.color[2] + int(dc), 0, 255),
+            polygon.color[3]
+        )
+
+        polygon.color = new_color
+
+    def mutate_polygon_alpha(self, polygon):
+        dc = 255*np.random.normal(scale=0.1)
+
+        new_color = (
+            polygon.color[0],
+            polygon.color[1],
+            polygon.color[2],
+            np.clip(polygon.color[3] + int(dc), 30, 60)
+        )
+
+        polygon.color = new_color
+
+
     # Mutate the selected polygon color
     def mutate_polygon_color(self, polygon):
-        dc = 255*self.max_x * np.random.normal(scale=0.1, size=4).astype(int)
+        dc = 255*np.random.normal(scale=0.1, size=4)
+
         new_color = (
             np.clip(polygon.color[0] + dc[0], 0, 255),
             np.clip(polygon.color[1] + dc[1], 0, 255),
             np.clip(polygon.color[2] + dc[2], 0, 255),      
-            np.clip(polygon.color[3] + dc[3], 30, 255),
+            np.clip(polygon.color[3] + dc[3], 30, 90),
         )
+
         polygon.color = new_color
 
     # Render the DNA to image
@@ -208,8 +269,12 @@ class DNA(object):
     # Compute fitness of DNA
     def calculate_fitness(self):
         self.render()
-        diff = ImageChops.difference(self.image, self.master_image)              
-        self._fitness = sum(ImageStat.Stat(diff).sum)
+        fitness = 0
+        diff = ImageChops.difference(self.image, self.master_image)
+        diff_array = np.array(diff)
+        for pixel in np.nditer(diff_array):
+            fitness += pixel[0]*pixel[0] + pixel[1]*pixel[1] + pixel[2]*pixel[2] + pixel[3]*pixel[3]
+        return fitness
 
     # Create copy of self and replicate
     def breed(self):
