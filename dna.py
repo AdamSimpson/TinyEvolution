@@ -1,4 +1,5 @@
 import numpy as np
+import math
 from PIL import Image,ImageDraw,ImageChops,ImageStat
 from polygon import Polygon
 import cPickle
@@ -216,7 +217,7 @@ class DNA(object):
         polygon.color = new_color
 
     def mutate_polygon_alpha(self, polygon):
-        dc = 255*np.random.normal(scale=0.1)
+        dc = 60*(np.random.normal(scale=0.1)+0.5)
 
         new_color = (
             polygon.color[0],
@@ -270,11 +271,17 @@ class DNA(object):
     def calculate_fitness(self):
         self.render()
         fitness = 0
-        diff = ImageChops.difference(self.image, self.master_image)
-        diff_array = np.array(diff)
-        for pixel in np.nditer(diff_array):
-            fitness += pixel[0]*pixel[0] + pixel[1]*pixel[1] + pixel[2]*pixel[2] + pixel[3]*pixel[3]
-        return fitness
+
+        for j in range(self.max_y):
+            for i in range(self.max_x):
+                r_m, g_m, b_m = self.image.getpixel((i, j))
+                r, g, b = self.master_image.getpixel((i, j))
+                r2 = (r_m - r) * (r_m - r)
+                g2 = (g_m - g) * (g_m - g)
+                b2 = (b_m - b) * (b_m - b)
+                fitness += math.sqrt(r2 + g2 + b2)
+
+        self._fitness = fitness
 
     # Create copy of self and replicate
     def breed(self):
