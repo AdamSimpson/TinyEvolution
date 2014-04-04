@@ -149,8 +149,8 @@ class DNA(object):
         dy = self.max_y * np.random.normal(scale=0.2)
 
         # Make sure to stay in bounds
-        np.clip(dx, pixels_to_left, pixels_to_right)
-        np.clip(dy, pixels_to_bottom, pixels_to_top)
+        np.clip(dx, -pixels_to_left, pixels_to_right)
+        np.clip(dy, -pixels_to_bottom, pixels_to_top)
 
         # Move the polygon
         polygon.move(delta_x = int(dx), delta_y = int(dy))
@@ -171,8 +171,8 @@ class DNA(object):
         dy = self.max_y * np.random.normal(scale=0.2)
 
         # Make sure to stay in bounds
-        np.clip(dx, pixels_to_left, pixels_to_right)
-        np.clip(dy, pixels_to_bottom, pixels_to_top)
+        np.clip(dx, -pixels_to_left, pixels_to_right)
+        np.clip(dy, -pixels_to_bottom, pixels_to_top)
 
         # Update point
         new_points = polygon.points
@@ -217,7 +217,7 @@ class DNA(object):
         polygon.color = new_color
 
     def mutate_polygon_alpha(self, polygon):
-        dc = 60*(np.random.normal(scale=0.1)+0.5)
+        dc = 60*(np.random.normal(scale=0.1) )
 
         new_color = (
             polygon.color[0],
@@ -269,6 +269,12 @@ class DNA(object):
 
     # Compute fitness of DNA
     def calculate_fitness(self):
+        self.render()
+        diff = ImageChops.difference(self.image, self.master_image)              
+        self._fitness = sum(ImageStat.Stat(diff).sum)
+
+    # Compute fitness of DNA
+    def calculate_fitness_slow(self):
         self.render()
         fitness = 0
 
