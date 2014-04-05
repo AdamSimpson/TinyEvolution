@@ -20,19 +20,23 @@ class Polygon(object):
 
     @property
     def min_x(self):
-        return min(self.points)[0]
+        x_points = zip(*self.points)[0]
+        return min(x_points)
 
     @property
     def max_x(self):
-        return max(self.points)[0]
+        x_points = zip(*self.points)[0]
+        return max(x_points)
 
     @property
     def min_y(self):
-        return min(self.points)[1]
+        y_points = zip(*self.points)[1]
+        return min(y_points)
 
     @property
     def max_y(self):
-        return max(self.points)[1]
+        y_points = zip(*self.points)[1]
+        return max(y_points)
 
     def move(self, delta_x, delta_y):
         for i, point in enumerate(self.points):

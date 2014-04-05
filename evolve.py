@@ -41,7 +41,7 @@ def main():
 
     # Evolve DNA and breed fittest
     loop_clock = time.clock()
-    for i in range(10000):
+    for i in range(100000):
 
         sub_parent = parent.copy()
         for j in range(10):

@@ -13,15 +13,15 @@ class DNA(object):
         self.max_x = master_image.size[0]
         self.max_y = master_image.size[1]
         self._fitness = None
-        self.max_polygon_count = 1000;
+        self.max_polygon_count = 100;
         self.min_polygon_count = 50;
-        self.mutate_polygon_count_rate = 0.0015;
-        self.mutate_polygon_order_rate = 0.0015;
+        self.mutate_polygon_count_rate = 0.003;
+        self.mutate_polygon_order_rate = 0.003;
         self.mutate_polygon_rate = 1.0;
-        self.mutate_polygon_point_count_rate = 0.0015;
-        self.mutate_polygon_location_rate = 0.0014;
-        self.mutate_polygon_point_rate = 0.0014;
-        self.mutate_polygon_color_rate = 0.0014;
+        self.mutate_polygon_point_count_rate = 0.003;
+        self.mutate_polygon_location_rate = 0.003;
+        self.mutate_polygon_point_rate = 0.003;
+        self.mutate_polygon_color_rate = 0.003;
 
     @property
     def polygon_count(self):
@@ -75,7 +75,9 @@ class DNA(object):
         x_points = np.random.random_integers(low=0,high=self.max_x,size=3).tolist()
         y_points = np.random.random_integers(low=0,high=self.max_y,size=3).tolist()
         points = zip(x_points, y_points)
-        color = tuple(np.random.random_integers(low=0, high=255, size=4).tolist())
+        color_rgb = np.random.random_integers(low=0, high=255, size=3).tolist()
+        color_a = [np.random.random_integers(low=30, high=60)]
+        color = tuple(color_rgb + color_a)
         new_polygon = Polygon(points, color)
         self.polygons.append(new_polygon)
 
@@ -145,15 +147,18 @@ class DNA(object):
         pixels_to_bottom = polygon.min_y
 
         # Use normal distribution to find displacement
-        dx = self.max_x * np.random.normal(scale=0.2)
-        dy = self.max_y * np.random.normal(scale=0.2)
+#        dx = self.max_x * np.random.normal(scale=0.3)
+#        dy = self.max_y * np.random.normal(scale=0.3)
+
+        dx = np.random.random_integers(low=-pixels_to_left, high=pixels_to_right)
+        dy = np.random.random_integers(low=-pixels_to_bottom, high=pixels_to_top)
 
         # Make sure to stay in bounds
-        np.clip(dx, -pixels_to_left, pixels_to_right)
-        np.clip(dy, -pixels_to_bottom, pixels_to_top)
+#        np.clip(dx, -pixels_to_left, pixels_to_right)
+#        np.clip(dy, -pixels_to_bottom, pixels_to_top)
 
         # Move the polygon
-        polygon.move(delta_x = int(dx), delta_y = int(dy))
+        polygon.move(delta_x = dx, delta_y = dy)
 
     # Mutate a polygon point
     def mutate_polygon_point(self, polygon, point):
@@ -167,16 +172,19 @@ class DNA(object):
         pixels_to_bottom = point_y
 
         # Use normal distribution to find displacement
-        dx = self.max_x * np.random.normal(scale=0.2)
-        dy = self.max_y * np.random.normal(scale=0.2)
+#        dx = self.max_x * np.random.normal(scale=0.3)
+#        dy = self.max_y * np.random.normal(scale=0.3)
+
+        dx = np.random.random_integers(low=-pixels_to_left, high=pixels_to_right)
+        dy = np.random.random_integers(low=-pixels_to_bottom, high=pixels_to_top)
 
         # Make sure to stay in bounds
-        np.clip(dx, -pixels_to_left, pixels_to_right)
-        np.clip(dy, -pixels_to_bottom, pixels_to_top)
+#        np.clip(dx, -pixels_to_left, pixels_to_right)
+#        np.clip(dy, -pixels_to_bottom, pixels_to_top)
 
         # Update point
         new_points = polygon.points
-        new_points[index] = (point_x + int(dx), point_y + int(dy))
+        new_points[index] = (point_x + dx, point_y + dy)
         polygon.points = new_points
 
     def mutate_polygon_red(self, polygon):
