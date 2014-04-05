@@ -13,14 +13,14 @@ class DNA(object):
         self.max_x = master_image.size[0]
         self.max_y = master_image.size[1]
         self._fitness = None
-        self.max_polygon_count = 100;
+        self.max_polygon_count = 6000;
         self.min_polygon_count = 50;
-        self.mutate_polygon_count_rate = 0.003;
+        self.mutate_polygon_count_rate = 0.0015;
         self.mutate_polygon_order_rate = 0.003;
-        self.mutate_polygon_rate = 1.0;
+        self.mutate_polygon_rate = 0.9;
         self.mutate_polygon_point_count_rate = 0.003;
-        self.mutate_polygon_location_rate = 0.003;
-        self.mutate_polygon_point_rate = 0.003;
+        self.mutate_polygon_location_rate = 0.004;
+        self.mutate_polygon_point_rate = 0.006;
         self.mutate_polygon_color_rate = 0.003;
 
     @property
@@ -49,10 +49,6 @@ class DNA(object):
         if self.will_mutate(self.mutate_polygon_count_rate):
             self.mutate_polygon_count()
 
-        # check if polygon order should mutate
-        if self.will_mutate(self.mutate_polygon_order_rate):
-            self.mutate_polygon_order()
-
         # check if each polygon should mutate
         for polygon in self.polygons:
             if self.will_mutate(self.mutate_polygon_rate):
@@ -72,8 +68,11 @@ class DNA(object):
 
     # Add random polygon to DNA
     def add_polygon(self):
-        x_points = np.random.random_integers(low=0,high=self.max_x,size=3).tolist()
-        y_points = np.random.random_integers(low=0,high=self.max_y,size=3).tolist()
+        center_x = np.random.random_integers(low=0,high=self.max_x)
+        center_y = np.random.random_integers(low=0,high=self.max_y)
+        x_points = np.random.random_integers(low=center_x-1,high=center_x+1,size=3).tolist()
+        y_points = np.random.random_integers(low=center_y-1,high=center_y+1,size=3).tolist()
+
         points = zip(x_points, y_points)
         color_rgb = np.random.random_integers(low=0, high=255, size=3).tolist()
         color_a = [np.random.random_integers(low=30, high=60)]
@@ -86,11 +85,12 @@ class DNA(object):
         del self.polygons[polygon_index]
 
     # Mutate polygon order
-    def mutate_polygon_order(self):
+    def mutate_polygon_order(self, polygon):
         # Get random polygon
-        random_remove_index = np.random.randint(low=0, high=self.polygon_count)
+#        random_remove_index = np.random.randint(low=0, high=self.polygon_count)
         random_insert_index = np.random.randint(low=0, high=self.polygon_count)
-        polygon = self.polygons.pop(random_remove_index)
+        index = self.polygons.index(polygon)
+        self.polygons.pop(index)
         # Insert it back into new spot
         self.polygons.insert(random_insert_index, polygon)
 
@@ -103,6 +103,10 @@ class DNA(object):
         # Mutate polygon location
         if self.will_mutate(self.mutate_polygon_location_rate):
             self.mutate_polygon_location(polygon)
+
+        # Mutate stacking order of polygons
+        if self.will_mutate(self.mutate_polygon_order_rate):
+            self.mutate_polygon_order(polygon)
 
         # Mutate polygon color
         if self.will_mutate(self.mutate_polygon_color_rate):
@@ -126,12 +130,14 @@ class DNA(object):
             random_point_index = np.random.randint(low=1, high=polygon.point_count)
             point_x, point_y = polygon.points[random_point_index]
             # Grab point to "left" of point
-            previous_point_x, previous_point_y = polygon.points[random_point_index-1]
+#            previous_point_x, previous_point_y = polygon.points[random_point_index-1]
 
             # Create and add point that is inbetween point and previous point
-            new_x = (previous_point_x + point_x) / 2
-            new_y = (previous_point_y + point_y) / 2
-            new_point = (new_x, new_y)
+#            new_x = (previous_point_x + point_x) / 2
+#            new_y = (previous_point_y + point_y) / 2
+#            new_point = (new_x, new_y)
+
+            new_point = (point_x, point_y)
 
             polygon.add_point(new_point)
         else:
@@ -146,16 +152,12 @@ class DNA(object):
         pixels_to_top    = self.max_y - polygon.max_y
         pixels_to_bottom = polygon.min_y
 
-        # Use normal distribution to find displacement
-#        dx = self.max_x * np.random.normal(scale=0.3)
-#        dy = self.max_y * np.random.normal(scale=0.3)
-
-        dx = np.random.random_integers(low=-pixels_to_left, high=pixels_to_right)
-        dy = np.random.random_integers(low=-pixels_to_bottom, high=pixels_to_top)
+        dx = np.random.random_integers(low=-3, high=3)
+        dy = np.random.random_integers(low=-3, high=3)
 
         # Make sure to stay in bounds
-#        np.clip(dx, -pixels_to_left, pixels_to_right)
-#        np.clip(dy, -pixels_to_bottom, pixels_to_top)
+        np.clip(dx, -pixels_to_left, pixels_to_right)
+        np.clip(dy, -pixels_to_bottom, pixels_to_top)
 
         # Move the polygon
         polygon.move(delta_x = dx, delta_y = dy)
@@ -171,16 +173,15 @@ class DNA(object):
         pixels_to_top    = self.max_y - point_y
         pixels_to_bottom = point_y
 
-        # Use normal distribution to find displacement
-#        dx = self.max_x * np.random.normal(scale=0.3)
-#        dy = self.max_y * np.random.normal(scale=0.3)
+#        dx = np.random.random_integers(low=-pixels_to_left, high=pixels_to_right)
+#        dy = np.random.random_integers(low=-pixels_to_bottom, high=pixels_to_top)
 
-        dx = np.random.random_integers(low=-pixels_to_left, high=pixels_to_right)
-        dy = np.random.random_integers(low=-pixels_to_bottom, high=pixels_to_top)
+        dx = np.random.random_integers(low=-3, high=3)
+        dy = np.random.random_integers(low=-3, high=3)
 
         # Make sure to stay in bounds
-#        np.clip(dx, -pixels_to_left, pixels_to_right)
-#        np.clip(dy, -pixels_to_bottom, pixels_to_top)
+        np.clip(dx, -pixels_to_left, pixels_to_right)
+        np.clip(dy, -pixels_to_bottom, pixels_to_top)
 
         # Update point
         new_points = polygon.points
@@ -300,9 +301,8 @@ class DNA(object):
     # Create copy of self and replicate
     def breed(self):
         # Clone polygons
-        polygons_copy = copy.deepcopy(self.polygons)
-        child = DNA(polygons_copy, self.master_image)    
- 
+        child = self.copy()
+
         # Replicate and possibly mutate
         child.mutate()
  
@@ -312,5 +312,7 @@ class DNA(object):
     def copy(self):
         polygons_copy = copy.deepcopy(self.polygons)
         dna_copy = DNA(polygons_copy, self.master_image)
+
+        dna_copy._fitness = self._fitness
 
         return dna_copy

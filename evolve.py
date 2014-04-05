@@ -19,7 +19,7 @@ def main():
     # Algorithm assumes parent is the same on all ranks
     if rank == 0:
         polygons = []
-        for i in range(3):
+        for i in range(1):
             x_points = np.random.random_integers(low=0,high=width,size=3).tolist()
             y_points = np.random.random_integers(low=0,high=height,size=3).tolist()
             points = zip(x_points, y_points)
@@ -41,7 +41,7 @@ def main():
 
     # Evolve DNA and breed fittest
     loop_clock = time.clock()
-    for i in range(100000):
+    for i in range(1000000):
 
         sub_parent = parent.copy()
         for j in range(10):
