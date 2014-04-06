@@ -13,15 +13,15 @@ class DNA(object):
         self.max_x = master_image.size[0]
         self.max_y = master_image.size[1]
         self._fitness = None
-        self.max_polygon_count = 6000;
-        self.min_polygon_count = 50;
-        self.mutate_polygon_count_rate = 0.0015;
-        self.mutate_polygon_order_rate = 0.003;
-        self.mutate_polygon_rate = 0.9;
-        self.mutate_polygon_point_count_rate = 0.003;
-        self.mutate_polygon_location_rate = 0.004;
-        self.mutate_polygon_point_rate = 0.006;
-        self.mutate_polygon_color_rate = 0.003;
+        self.max_polygon_count = 100;
+        self.min_polygon_count = 0;
+        self.mutate_polygon_order_rate = 0.0015;
+        self.mutate_polygon_point_add_rate = 0.0007;
+        self.mutate_polygon_point_remove_rate = 0.0007;
+        self.mutate_add_polygon_rate = 0.0015;
+        self.mutate_remove_polygon_rate = 0.0007;
+        self.mutate_polygon_color_rate = 0.0007;
+        self.mutate_polygon_point_rate = 0.0015;
 
     @property
     def polygon_count(self):
@@ -46,67 +46,66 @@ class DNA(object):
         self.image = None
 
         # check if polygon count should mutate
-        if self.will_mutate(self.mutate_polygon_count_rate):
-            self.mutate_polygon_count()
+        if self.will_mutate(self.mutate_add_polygon_rate) and self.polygon_count < self.max_polygon_count:
+            self.add_polygon()
+
+        if self.will_mutate(self.mutate_remove_polygon_rate) and self.polygon_count > self.min_polygon_count:
+            self.remove_polygon()
+
+        if self.will_mutate(self.mutate_polygon_order_rate):
+            self.mutate_polygon_order()
 
         # check if each polygon should mutate
         for polygon in self.polygons:
-            if self.will_mutate(self.mutate_polygon_rate):
-                self.mutate_polygon(polygon)
+            self.mutate_polygon(polygon)
             # check if each point should mutate
             for point in polygon.points:
                 if self.will_mutate(self.mutate_polygon_point_rate):
-                    self.mutate_polygon_point(polygon, point)
-
-    # Mutate number of polygons in DNA
-    def mutate_polygon_count(self):
-        if np.random.rand() < 0.75 and self.polygon_count < self.max_polygon_count:
-            self.add_polygon()
-        elif self.polygon_count > self.min_polygon_count:
-            random_index = np.random.randint(low=0, high=self.polygon_count)
-            self.remove_polygon(random_index)
+                    self.mutate_polygon_point(polygon, point, 3)
+            for point in polygon.points:
+                if self.will_mutate(self.mutate_polygon_point_rate):
+                    self.mutate_polygon_point(polygon, point, 20)
+            for point in polygon.points:
+                if self.will_mutate(self.mutate_polygon_point_rate):
+                    self.mutate_polygon_point(polygon, point, 200)
 
     # Add random polygon to DNA
     def add_polygon(self):
         center_x = np.random.random_integers(low=0,high=self.max_x)
         center_y = np.random.random_integers(low=0,high=self.max_y)
-        x_points = np.random.random_integers(low=center_x-1,high=center_x+1,size=3).tolist()
-        y_points = np.random.random_integers(low=center_y-1,high=center_y+1,size=3).tolist()
+        x_points = np.random.random_integers(low=center_x-3,high=center_x+3,size=3).tolist()
+        y_points = np.random.random_integers(low=center_y-3,high=center_y+3,size=3).tolist()
 
         points = zip(x_points, y_points)
         color_rgb = np.random.random_integers(low=0, high=255, size=3).tolist()
         color_a = [np.random.random_integers(low=30, high=60)]
         color = tuple(color_rgb + color_a)
         new_polygon = Polygon(points, color)
-        self.polygons.append(new_polygon)
+        random_index = np.random.random_integers(low=0, high=self.polygon_count)
+        self.polygons.insert(random_index, new_polygon)
 
     # Remove specified polygon from DNA
-    def remove_polygon(self, polygon_index):
-        del self.polygons[polygon_index]
+    def remove_polygon(self):
+        random_index = np.random.randint(low=0, high=self.polygon_count)
+        del self.polygons[random_index]
 
     # Mutate polygon order
-    def mutate_polygon_order(self, polygon):
+    def mutate_polygon_order(self):
         # Get random polygon
-#        random_remove_index = np.random.randint(low=0, high=self.polygon_count)
+        random_index = np.random.randint(low=0, high=self.polygon_count)
         random_insert_index = np.random.randint(low=0, high=self.polygon_count)
-        index = self.polygons.index(polygon)
-        self.polygons.pop(index)
+        polygon = self.polygons.pop(random_index)
         # Insert it back into new spot
         self.polygons.insert(random_insert_index, polygon)
 
     # Mutate specified polygon
     def mutate_polygon(self, polygon):
         # Mutate polygon point count
-        if self.will_mutate(self.mutate_polygon_point_count_rate):
-            self.mutate_polygon_point_count(polygon)
+        if self.will_mutate(self.mutate_polygon_point_add_rate):
+            self.add_polygon_point(polygon)
 
-        # Mutate polygon location
-        if self.will_mutate(self.mutate_polygon_location_rate):
-            self.mutate_polygon_location(polygon)
-
-        # Mutate stacking order of polygons
-        if self.will_mutate(self.mutate_polygon_order_rate):
-            self.mutate_polygon_order(polygon)
+        if self.will_mutate(self.mutate_polygon_point_remove_rate):
+            self.remove_polygon_point(polygon)
 
         # Mutate polygon color
         if self.will_mutate(self.mutate_polygon_color_rate):
@@ -121,49 +120,27 @@ class DNA(object):
         if self.will_mutate(self.mutate_polygon_color_rate):
             self.mutate_polygon_alpha(polygon)
 
-    # Mutate number of points in specified polygon
-    def mutate_polygon_point_count(self, polygon):
-        if np.random.rand() < 0.5:
-            # Grab random polygon and random point
-            random_polygon_index = np.random.randint(low=0, high=self.polygon_count)
-            polygon = self.polygons[random_polygon_index]
-            random_point_index = np.random.randint(low=1, high=polygon.point_count)
-            point_x, point_y = polygon.points[random_point_index]
-            # Grab point to "left" of point
-#            previous_point_x, previous_point_y = polygon.points[random_point_index-1]
+    # Add point to polygon
+    def add_polygon_point(self, polygon):
+        # Grab random polygon and random point
+        random_point_index = np.random.randint(low=1, high=polygon.point_count)
+        point_x, point_y = polygon.points[random_point_index]
+        prev_x, prev_y = polygon.points[random_point_index-1]
 
-            # Create and add point that is inbetween point and previous point
-#            new_x = (previous_point_x + point_x) / 2
-#            new_y = (previous_point_y + point_y) / 2
-#            new_point = (new_x, new_y)
+        new_point_x = (prev_x + point_x)/2.0
+        new_point_y = (prev_y + point_y)/2.0
 
-            new_point = (point_x, point_y)
+        new_point = (new_point_x, new_point_y)
 
-            polygon.add_point(new_point)
-        else:
-            random_index = np.random.randint(low=0, high=polygon.point_count)
-            polygon.remove_point(random_index)
+        polygon.add_point(random_point_index, new_point)
 
-    # Translate the polygon up/down and left/right
-    def mutate_polygon_location(self, polygon):
-        # Number of pixels to edge of image
-        pixels_to_left   = polygon.min_x
-        pixels_to_right  = self.max_x - polygon.max_x
-        pixels_to_top    = self.max_y - polygon.max_y
-        pixels_to_bottom = polygon.min_y
-
-        dx = np.random.random_integers(low=-3, high=3)
-        dy = np.random.random_integers(low=-3, high=3)
-
-        # Make sure to stay in bounds
-        np.clip(dx, -pixels_to_left, pixels_to_right)
-        np.clip(dy, -pixels_to_bottom, pixels_to_top)
-
-        # Move the polygon
-        polygon.move(delta_x = dx, delta_y = dy)
+    # Remove point from polygon
+    def remove_polygon_point(self, polygon):
+        random_index = np.random.randint(low=0, high=polygon.point_count)
+        polygon.remove_point(random_index)
 
     # Mutate a polygon point
-    def mutate_polygon_point(self, polygon, point):
+    def mutate_polygon_point(self, polygon, point, amount):
         index = polygon.points.index(point)
         point_x, point_y = polygon.points[index]
 
@@ -173,15 +150,12 @@ class DNA(object):
         pixels_to_top    = self.max_y - point_y
         pixels_to_bottom = point_y
 
-#        dx = np.random.random_integers(low=-pixels_to_left, high=pixels_to_right)
-#        dy = np.random.random_integers(low=-pixels_to_bottom, high=pixels_to_top)
-
-        dx = np.random.random_integers(low=-3, high=3)
-        dy = np.random.random_integers(low=-3, high=3)
+        dx = np.random.random_integers(low=-amount, high=amount)
+        dy = np.random.random_integers(low=-amount, high=amount)
 
         # Make sure to stay in bounds
-        np.clip(dx, -pixels_to_left, pixels_to_right)
-        np.clip(dy, -pixels_to_bottom, pixels_to_top)
+        dx = np.clip(dx, -pixels_to_left, pixels_to_right)
+        dy = np.clip(dy, -pixels_to_bottom, pixels_to_top)
 
         # Update point
         new_points = polygon.points
@@ -189,10 +163,8 @@ class DNA(object):
         polygon.points = new_points
 
     def mutate_polygon_red(self, polygon):
-        dc = 255*np.random.normal(scale=0.1)
-
         new_color = (
-            np.clip(polygon.color[0] + int(dc), 0, 255),
+            np.random.random_integers(low=0,high=255),
             polygon.color[1],
             polygon.color[2],
             polygon.color[3]
@@ -201,11 +173,9 @@ class DNA(object):
         polygon.color = new_color
 
     def mutate_polygon_green(self, polygon):
-        dc = 255*np.random.normal(scale=0.1)
-
         new_color = (
             polygon.color[0],
-            np.clip(polygon.color[1] + int(dc), 0, 255), 
+            np.random.random_integers(low=0,high=255),
             polygon.color[2],
             polygon.color[3]
         )
@@ -214,39 +184,21 @@ class DNA(object):
 
 
     def mutate_polygon_blue(self, polygon):
-        dc = 255*np.random.normal(scale=0.1)
-
         new_color = (
             polygon.color[0],
             polygon.color[1],
-            np.clip(polygon.color[2] + int(dc), 0, 255),
+            np.random.random_integers(low=0,high=255),
             polygon.color[3]
         )
 
         polygon.color = new_color
 
     def mutate_polygon_alpha(self, polygon):
-        dc = 60*(np.random.normal(scale=0.1) )
-
         new_color = (
             polygon.color[0],
             polygon.color[1],
             polygon.color[2],
-            np.clip(polygon.color[3] + int(dc), 30, 60)
-        )
-
-        polygon.color = new_color
-
-
-    # Mutate the selected polygon color
-    def mutate_polygon_color(self, polygon):
-        dc = 255*np.random.normal(scale=0.1, size=4)
-
-        new_color = (
-            np.clip(polygon.color[0] + dc[0], 0, 255),
-            np.clip(polygon.color[1] + dc[1], 0, 255),
-            np.clip(polygon.color[2] + dc[2], 0, 255),      
-            np.clip(polygon.color[3] + dc[3], 30, 90),
+            np.random.random_integers(low=30,high=80)
         )
 
         polygon.color = new_color

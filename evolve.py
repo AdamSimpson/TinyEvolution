@@ -44,7 +44,8 @@ def main():
     for i in range(1000000):
 
         sub_parent = parent.copy()
-        for j in range(10):
+
+        for j in range(1):
             child = sub_parent.breed()
             if child.fitness < sub_parent.fitness:
                 sub_parent = child            
@@ -78,7 +79,7 @@ def main():
                 parent = DNA(polygons, master_image)
 
         # Save image and polygon information
-        if i%100 == 0 and rank == 0:
+        if i%1000 == 0 and rank == 0:
             parent.save(str(i))
 
     loop_time = time.clock() - loop_clock
